@@ -15,13 +15,13 @@ services:
       - WIREGUARD_ADDRESSES=10.2.0.2/32 #ip address
       - SERVER_COUNTRIES= #server country
     ports:
-      - 8686:8686
-      - 8080:8080
-      - 6881:6881
-      - 6881:6881/udp
-      - 9696:9696
-      - 8989:8989
-      - 7878:7878
+      - 8080:8080 #qbit
+      - 6881:6881 #qbit
+      - 6881:6881/udp #qbit
+      - 9696:9696 #prowlarr
+      - 8989:8989 #sonarr
+      - 7878:7878 #eadarr
+      - 8686:8686 #lidarr
     restart: unless-stopped
 
 #qbit
