@@ -1,90 +1,116 @@
 ---
 services:
 
+#gluetun
+
+ gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER= #vpn provider
+      - VPN_TYPE= #vpn type
+      - WIREGUARD_PRIVATE_KEY= #private key
+      - WIREGUARD_ADDRESSES=10.2.0.2/32 #ip address
+      - SERVER_COUNTRIES= #server country
+    ports:
+      - 8686:8686
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+      - 9696:9696
+      - 8989:8989
+      - 7878:7878
+    restart: unless-stopped
+
 #qbit
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
+    depends_on:
+      - gluetun
     container_name: qbittorrent
+    network_mode: "service:gluetun"
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
     volumes:
-      - ./qbittorrent/appdata:/config
-      - ./data/downloads:/downloads 
-    ports:
-      - 8080:8080
-      - 6881:6881
-      - 6881:6881/udp
+      - ./docker/qbittorrent/appdata:/config
+      - ./docker/data/downloads:/downloads #optional
     restart: unless-stopped
 
 #Prowlarr
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
+    depends_on: 
+      - gluetun
+    network_mode: "service:gluetun"
     container_name: prowlarr
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
     volumes:
-      - ./prowlarr/config:/config
-    ports:
-      - 9696:9696
+      - ./docker/prowlarr/config:/config
     restart: unless-stopped
 
 #Sonarr
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
+    depends_on: 
+      - gluetun
+    network_mode: "service:gluetun"
     container_name: sonarr
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
     volumes:
-      - ./sonarr/data:/config
-      - ./data/tvseries:/tv 
-      - ./data/downloads:/downloads 
-    ports:
-      - 8989:8989
+      - ./docker/sonarr/data:/config
+      - ./docker/data/tvseries:/tv #optional
+      - ./docker/data/downloads:/downloads #optional
     restart: unless-stopped
 
 #Radarr
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
+    depends_on: 
+      - gluetun
+    network_mode: "service:gluetun"
     container_name: radarr
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
     volumes:
-      - ./radarr/data:/config
-      - ./data/movies:/movies 
-      - ./data/downloads:/downloads 
-    ports:
-      - 7878:7878
+      - ./docker/radarr/data:/config
+      - ./docker/data/movies:/movies #optional
+      - ./docker/data/downloads:/downloads #optional
     restart: unless-stopped
 
 #Lidarr
 
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
+    depends_on: 
+      - gluetun
+    network_mode: "service:gluetun"
     container_name: lidarr
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
     volumes:
-      - ./lidarr/config:/config
-      - ./data/music:/music 
-      - ./data/downloads:/downloads 
-    ports:
-      - 8686:8686
+      - ./docker/lidarr/config:/config
+      - ./docker/data/music:/music #optional
+      - ./docker/data/downloads:/downloads #optional
     restart: unless-stopped
 
 #Jellyfin
@@ -95,14 +121,15 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ= #optional
+      - JELLYFIN_PublishedServerUrl=http://192.168.0.5 #optional
     volumes:
-      - ./jellyfin/config:/config
-      - ./data/tvseries:/data/tvseries
-      - ./data/movies:/data/movies
+      - ./docker/jellyfin/config:/config
+      - ./docker/data/tvseries:/data/tvseries
+      - ./docker/data/movies:/data/movies
     ports:
       - 8096:8096
-      - 8920:8920 
-      - 7359:7359/udp 
-      - 1900:1900/udp 
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
     restart: unless-stopped
